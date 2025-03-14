@@ -12,57 +12,207 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
- 
+
 model User {
-  id            String          @id @default(cuid())
-  name          String?
-  username      String?   @unique
-  email         String          @unique
-  emailVerified DateTime?
-  image         String?
-  bio           String?
-  accounts      Account[]
-  sessions      Session[]
- 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                 String       @id @default(cuid())
+  name               String?
+  username           String?      @unique
+  email              String       @unique
+  emailVerified      DateTime?
+  image              String?
+  bio                String?
+  accounts           Account[]
+  sessions           Session[]
+  problems           Problem[]
+  submissions        Submission[]
+  solvedProblems     Problem[]    @relation("SolvedProblems")
+  likedProblems      Problem[]    @relation("LikedProblems")
+  dislikedProblems   Problem[]    @relation("DislikedProblems")
+  comments           Comment[]
+  followers          Follow[]     @relation("Following")
+  following          Follow[]     @relation("Follower")
+  
+  // Stats
+  totalSubmissions    Int         @default(0)
+  acceptedSubmissions Int         @default(0)
+  lastSubmission      DateTime?
+  streak              Int         @default(0)
+  longestStreak       Int         @default(0)
+  ranking             Int?
+  experience          Int         @default(0)
+  
+  // Activity tracking
+  lastActive         DateTime?
+  
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
 }
- 
+
 model Account {
+  id                String      @id @default(cuid())
   userId            String
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String?
-  access_token      String?
+  refresh_token     String?     @db.Text
+  access_token      String?     @db.Text
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String?
+  id_token          String?     @db.Text
   session_state     String?
- 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
- 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
- 
-  @@id([provider, providerAccountId])
+
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  user              User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
 }
- 
+
 model Session {
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
- 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String      @id @default(cuid())
+  sessionToken  String      @unique
+  userId        String
+  expires       DateTime
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 }
- 
+
 model VerificationToken {
   identifier String
   token      String
   expires    DateTime
- 
+
   @@id([identifier, token])
+}
+
+model Problem {
+  id              String        @id @default(cuid())
+  title           String
+  slug            String        @unique
+  description     String        @db.Text
+  difficulty      Int
+  tags            String[]
+  template        String        @db.Text
+  testCases       TestCase[]
+  examples        Example[]
+  hints           Hint[]
+  author          User          @relation(fields: [authorId], references: [id])
+  authorId        String
+  submissions     Submission[]
+  solvedBy        User[]        @relation("SolvedProblems")
+  likedBy         User[]        @relation("LikedProblems")
+  dislikedBy      User[]        @relation("DislikedProblems")
+  comments        Comment[]
+  
+  // Stats
+  likeCount       Int           @default(0)
+  dislikeCount    Int           @default(0)
+  acceptanceRate  Float         @default(0)
+  attemptCount    Int           @default(0)
+  solveCount      Int           @default(0)
+  timeLimit       Int           // in milliseconds
+  memoryLimit     Int           // in KB
+  
+  // Visibility and status
+  isPublished     Boolean       @default(false)
+  isPremium       Boolean       @default(false)
+  
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+model Submission {
+  id              String           @id @default(cuid())
+  code            String           @db.Text
+  language        String
+  status          SubmissionStatus
+  runtime         Int?             // in milliseconds
+  memory          Int?             // in KB
+  errorMessage    String?          @db.Text
+  executionTime   DateTime?
+  testCasesPassed Int              @default(0)
+  totalTestCases  Int              @default(0)
+  
+  user            User             @relation(fields: [userId], references: [id])
+  userId          String
+  problem         Problem          @relation(fields: [problemId], references: [id])
+  problemId       String
+  
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+}
+
+enum SubmissionStatus {
+  PENDING
+  ACCEPTED
+  WRONG_ANSWER
+  TIME_LIMIT_EXCEEDED
+  MEMORY_LIMIT_EXCEEDED
+  RUNTIME_ERROR
+  COMPILATION_ERROR
+}
+
+model TestCase {
+  id              String    @id @default(cuid())
+  input           String    @db.Text
+  output          String    @db.Text
+  isHidden        Boolean   @default(false)
+  problem         Problem   @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  problemId       String
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model Example {
+  id              String    @id @default(cuid())
+  input           String    @db.Text
+  output          String    @db.Text
+  explanation     String?   @db.Text
+  problem         Problem   @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  problemId       String
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model Hint {
+  id              String    @id @default(cuid())
+  content         String    @db.Text
+  problem         Problem   @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  problemId       String
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model Comment {
+  id              String    @id @default(cuid())
+  content         String    @db.Text
+  author          User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId        String
+  problem         Problem   @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  problemId       String
+  parentId        String?
+  parent          Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: SetNull)
+  replies         Comment[] @relation("CommentReplies")
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model Follow {
+  id              String    @id @default(cuid())
+  follower        User      @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
+  followerId      String
+  following       User      @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
+  followingId     String
+  
+  createdAt       DateTime  @default(now())
+
+  @@unique([followerId, followingId])
 }
