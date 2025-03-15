@@ -1,18 +1,24 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { useSession } from "next-auth/react";
+import * as React from "react"
+import { useSession } from "next-auth/react"
 import {
+  BookOpen,
+  Bot,
   Command,
+  Frame,
   LayoutDashboard,
   LifeBuoy,
+  Map,
+  PieChart,
   Send,
+  Settings2,
   SquareTerminal,
-} from "lucide-react";
+} from "lucide-react"
 
-import { NavMain } from "@/components/globals/nav-main";
-import { NavSecondary } from "@/components/globals/nav-secondary";
-import { NavUser } from "@/components/globals/nav-user";
+import { NavMain } from "@/components/globals/nav-main"
+import { NavSecondary } from "@/components/globals/nav-secondary"
+import { NavUser } from "@/components/globals/nav-user"
 import {
   Sidebar,
   SidebarContent,
@@ -21,8 +27,8 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar";
-import Link from "next/link";
+} from "@/components/ui/sidebar"
+import Link from "next/link"
 
 const data = {
   user: {
@@ -64,10 +70,10 @@ const data = {
       icon: Send,
     },
   ],
-};
+}
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { data: session } = useSession();
+    const { data: session } = useSession()
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
@@ -95,5 +101,5 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavUser user={session?.user} />
       </SidebarFooter>
     </Sidebar>
-  );
+  )
 }

@@ -1,8 +1,19 @@
-"use client";
+"use client"
 
-import { BadgeCheck, ChevronsUpDown, LogOut } from "lucide-react";
+import {
+  BadgeCheck,
+  Bell,
+  ChevronsUpDown,
+  CreditCard,
+  LogOut,
+  Sparkles,
+} from "lucide-react"
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/components/ui/avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,23 +22,23 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu"
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar";
-import { User } from "next-auth";
-import { signOut } from "next-auth/react";
+} from "@/components/ui/sidebar"
+import { User } from "next-auth"
+import { signOut } from "next-auth/react"
 
 interface NavUserProps {
   user: User | undefined;
 }
 
 export function NavUser({ user }: NavUserProps) {
-  const { isMobile } = useSidebar();
-
+  const { isMobile } = useSidebar()
+  
   if (!user) {
     return (
       <SidebarMenu>
@@ -43,12 +54,12 @@ export function NavUser({ user }: NavUserProps) {
           </SidebarMenuButton>
         </SidebarMenuItem>
       </SidebarMenu>
-    );
+    )
   }
 
-  const displayName = user.name ?? "Anonymous User";
-  const displayEmail = user.email ?? "No email provided";
-  const initials = displayName.substring(0, 2).toUpperCase();
+  const displayName = user.name ?? 'Anonymous User'
+  const displayEmail = user.email ?? 'No email provided'
+  const initials = displayName.substring(0, 2).toUpperCase()
 
   return (
     <SidebarMenu>
@@ -63,9 +74,7 @@ export function NavUser({ user }: NavUserProps) {
                 {user.image ? (
                   <AvatarImage src={user.image} alt={displayName} />
                 ) : (
-                  <AvatarFallback className="rounded-lg">
-                    {initials}
-                  </AvatarFallback>
+                  <AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
                 )}
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
@@ -84,13 +93,11 @@ export function NavUser({ user }: NavUserProps) {
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  {user.image ? (
-                    <AvatarImage src={user.image} alt={displayName} />
-                  ) : (
-                    <AvatarFallback className="rounded-lg">
-                      {initials}
-                    </AvatarFallback>
-                  )}
+                {user.image ? (
+                  <AvatarImage src={user.image} alt={displayName} />
+                ) : (
+                  <AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
+                )}
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">{displayName}</span>
@@ -114,5 +121,5 @@ export function NavUser({ user }: NavUserProps) {
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
-  );
+  )
 }
