@@ -38,20 +38,14 @@ export const HeroSection = ({ session, isLoading }: HeroSectionProps) => {
                 Loading...
               </Button>
             ) : session ? (
-              <Button
-                asChild
-                className="w-5/6 md:w-1/4 font-bold group/arrow"
-              >
+              <Button asChild className="w-5/6 md:w-1/4 font-bold group/arrow">
                 <Link href="/app">
                   Dashboard
                   <ArrowRight className="size-5 ml-2 group-hover/arrow:translate-x-1 transition-transform" />
                 </Link>
               </Button>
             ) : (
-              <Button
-                asChild
-                className="w-5/6 md:w-1/4 font-bold group/arrow"
-              >
+              <Button asChild className="w-5/6 md:w-1/4 font-bold group/arrow">
                 <Link href="/login">
                   Get Started
                   <ArrowRight className="size-5 ml-2 group-hover/arrow:translate-x-1 transition-transform" />

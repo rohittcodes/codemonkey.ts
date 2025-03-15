@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,38 +8,21 @@ datasource db {
 }
 
 model User {
-  id                 String       @id @default(cuid())
-  name               String?
-  username           String?      @unique
-  email              String       @unique
-  emailVerified      DateTime?
-  image              String?
-  bio                String?
-  accounts           Account[]
-  sessions           Session[]
-  problems           Problem[]
-  submissions        Submission[]
-  solvedProblems     Problem[]    @relation("SolvedProblems")
-  likedProblems      Problem[]    @relation("LikedProblems")
-  dislikedProblems   Problem[]    @relation("DislikedProblems")
-  comments           Comment[]
-  followers          Follow[]     @relation("Following")
-  following          Follow[]     @relation("Follower")
+  id                String       @id @default(cuid())
+  name              String?
+  username          String?      @unique
+  email             String       @unique
+  emailVerified     DateTime?
+  image             String?
+  accounts          Account[]
+  sessions          Session[]
+  problems          Problem[]
+  submissions       Submission[]
+  solvedProblems    Problem[]    @relation("SolvedProblems")
+  comments          Comment[]
   
-  // Stats
-  totalSubmissions    Int         @default(0)
-  acceptedSubmissions Int         @default(0)
-  lastSubmission      DateTime?
-  streak              Int         @default(0)
-  longestStreak       Int         @default(0)
-  ranking             Int?
-  experience          Int         @default(0)
-  
-  // Activity tracking
-  lastActive         DateTime?
-  
-  createdAt           DateTime    @default(now())
-  updatedAt           DateTime    @updatedAt
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
 }
 
 model Account {
@@ -76,9 +53,6 @@ model Session {
   userId        String
   expires       DateTime
   user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
 }
 
 model VerificationToken {
@@ -89,37 +63,29 @@ model VerificationToken {
   @@id([identifier, token])
 }
 
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model Problem {
   id              String        @id @default(cuid())
   title           String
   slug            String        @unique
   description     String        @db.Text
-  difficulty      Int
+  difficulty      Int           // 1: Easy, 2: Medium, 3: Hard
   tags            String[]
   template        String        @db.Text
   testCases       TestCase[]
   examples        Example[]
-  hints           Hint[]
   author          User          @relation(fields: [authorId], references: [id])
   authorId        String
   submissions     Submission[]
   solvedBy        User[]        @relation("SolvedProblems")
-  likedBy         User[]        @relation("LikedProblems")
-  dislikedBy      User[]        @relation("DislikedProblems")
   comments        Comment[]
-  
-  // Stats
-  likeCount       Int           @default(0)
-  dislikeCount    Int           @default(0)
-  acceptanceRate  Float         @default(0)
-  attemptCount    Int           @default(0)
-  solveCount      Int           @default(0)
-  timeLimit       Int           // in milliseconds
-  memoryLimit     Int           // in KB
-  
-  // Visibility and status
+
   isPublished     Boolean       @default(false)
-  isPremium       Boolean       @default(false)
   
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
@@ -133,7 +99,6 @@ model Submission {
   runtime         Int?             // in milliseconds
   memory          Int?             // in KB
   errorMessage    String?          @db.Text
-  executionTime   DateTime?
   testCasesPassed Int              @default(0)
   totalTestCases  Int              @default(0)
   
@@ -143,7 +108,6 @@ model Submission {
   problemId       String
   
   createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
 }
 
 enum SubmissionStatus {
@@ -163,9 +127,6 @@ model TestCase {
   isHidden        Boolean   @default(false)
   problem         Problem   @relation(fields: [problemId], references: [id], onDelete: Cascade)
   problemId       String
-  
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
 }
 
 model Example {
@@ -175,19 +136,6 @@ model Example {
   explanation     String?   @db.Text
   problem         Problem   @relation(fields: [problemId], references: [id], onDelete: Cascade)
   problemId       String
-  
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-}
-
-model Hint {
-  id              String    @id @default(cuid())
-  content         String    @db.Text
-  problem         Problem   @relation(fields: [problemId], references: [id], onDelete: Cascade)
-  problemId       String
-  
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
 }
 
 model Comment {
@@ -202,17 +150,4 @@ model Comment {
   replies         Comment[] @relation("CommentReplies")
   
   createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-}
-
-model Follow {
-  id              String    @id @default(cuid())
-  follower        User      @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
-  followerId      String
-  following       User      @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
-  followingId     String
-  
-  createdAt       DateTime  @default(now())
-
-  @@unique([followerId, followingId])
 }

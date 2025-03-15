@@ -37,7 +37,8 @@ export const TeamSection = () => {
       </h2>
 
       <h3 className="md:w-1/2 mx-auto text-xl text-center text-muted-foreground mb-12">
-        Passionate developers building tools to help you become a better programmer.
+        Passionate developers building tools to help you become a better
+        programmer.
       </h3>
 
       <div className="grid sm:grid-cols-2 gap-8 max-w-4xl mx-auto">

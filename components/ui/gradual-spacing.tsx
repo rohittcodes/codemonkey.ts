@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import { AnimatePresence, motion, useInView } from 'framer-motion';
-import * as React from 'react';
+import { AnimatePresence, motion, useInView } from "framer-motion";
+import * as React from "react";
 
-export function GradualSpacing({ text = 'Gradual Spacing' }: { text: string }) {
+export function GradualSpacing({ text = "Gradual Spacing" }: { text: string }) {
   const ref = React.useRef(null);
   const isInView = useInView(ref, { once: true });
   return (
     <div className="flex space-x-1 justify-center">
       <AnimatePresence>
-        {text.split('').map((char, i) => (
+        {text.split("").map((char, i) => (
           <motion.p
             ref={ref}
             key={i}
@@ -19,7 +19,7 @@ export function GradualSpacing({ text = 'Gradual Spacing' }: { text: string }) {
             transition={{ duration: 0.3, delay: i * 0.0125 }}
             className="text-xl text-center sm:text-4xl font-bold tracking-tighter md:text-6xl md:leading-[4rem]"
           >
-            {char === ' ' ? <span>&nbsp;</span> : char}
+            {char === " " ? <span>&nbsp;</span> : char}
           </motion.p>
         ))}
       </AnimatePresence>
