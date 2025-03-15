@@ -46,8 +46,9 @@ export const FeaturesSection = () => {
       </h2>
 
       <h3 className="md:w-1/2 mx-auto text-xl text-center text-muted-foreground mb-8">
-        Discover our powerful suite of tools designed to accelerate your coding journey.
-        From collaborative coding to AI-powered learning, we&apos;ve got you covered.
+        Discover our powerful suite of tools designed to accelerate your coding
+        journey. From collaborative coding to AI-powered learning, we&apos;ve
+        got you covered.
       </h3>
 
       <div className="grid sm:grid-cols-2 gap-8">

@@ -16,7 +16,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "CodeMonkey",
-  description: "Master programming with collaborative coding, AI-powered learning, structured roadmaps, and interactive quizzes.",
+  description:
+    "Master programming with collaborative coding, AI-powered learning, structured roadmaps, and interactive quizzes.",
 };
 
 export default function RootLayout({
@@ -31,9 +32,7 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <ThemeProvider>
-          <SessionProvider>
-            {children}
-          </SessionProvider>
+          <SessionProvider>{children}</SessionProvider>
         </ThemeProvider>
       </body>
     </html>
