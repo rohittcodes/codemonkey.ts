@@ -8,21 +8,27 @@ datasource db {
 }
 
 model User {
-  id                String       @id @default(cuid())
-  name              String?
-  username          String?      @unique
-  email             String       @unique
-  emailVerified     DateTime?
-  image             String?
-  accounts          Account[]
-  sessions          Session[]
-  problems          Problem[]
-  submissions       Submission[]
-  solvedProblems    Problem[]    @relation("SolvedProblems")
-  comments          Comment[]
+  id                 String       @id @default(cuid())
+  name               String?
+  username           String?      @unique
+  email              String       @unique
+  emailVerified      DateTime?
+  image              String?
+  accounts           Account[]
+  sessions           Session[]
+  problems           Problem[]
+  submissions        Submission[]
+
+  aiMessages         Message[]
+  snippets           Snippet[]
+  quizzes            Quiz[]
+  roadmaps           Roadmap[]
+
+  solvedProblems     Problem[]    @relation("SolvedProblems")
+  comments           Comment[]
   
-  createdAt         DateTime     @default(now())
-  updatedAt         DateTime     @updatedAt
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
 }
 
 model Account {
@@ -53,6 +59,9 @@ model Session {
   userId        String
   expires       DateTime
   user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 }
 
 model VerificationToken {
@@ -63,28 +72,21 @@ model VerificationToken {
   @@id([identifier, token])
 }
 
-enum ReviewStatus {
-  PENDING
-  APPROVED
-  REJECTED
-}
-
 model Problem {
   id              String        @id @default(cuid())
   title           String
   slug            String        @unique
   description     String        @db.Text
-  difficulty      Int           // 1: Easy, 2: Medium, 3: Hard
+  difficulty      Int
   tags            String[]
   template        String        @db.Text
   testCases       TestCase[]
-  examples        Example[]
   author          User          @relation(fields: [authorId], references: [id])
   authorId        String
   submissions     Submission[]
   solvedBy        User[]        @relation("SolvedProblems")
   comments        Comment[]
-
+  
   isPublished     Boolean       @default(false)
   
   createdAt       DateTime      @default(now())
@@ -99,6 +101,7 @@ model Submission {
   runtime         Int?             // in milliseconds
   memory          Int?             // in KB
   errorMessage    String?          @db.Text
+  executionTime   DateTime?
   testCasesPassed Int              @default(0)
   totalTestCases  Int              @default(0)
   
@@ -108,6 +111,7 @@ model Submission {
   problemId       String
   
   createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
 }
 
 enum SubmissionStatus {
@@ -127,15 +131,9 @@ model TestCase {
   isHidden        Boolean   @default(false)
   problem         Problem   @relation(fields: [problemId], references: [id], onDelete: Cascade)
   problemId       String
-}
-
-model Example {
-  id              String    @id @default(cuid())
-  input           String    @db.Text
-  output          String    @db.Text
-  explanation     String?   @db.Text
-  problem         Problem   @relation(fields: [problemId], references: [id], onDelete: Cascade)
-  problemId       String
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 }
 
 model Comment {
@@ -150,4 +148,93 @@ model Comment {
   replies         Comment[] @relation("CommentReplies")
   
   createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model Message {
+  id              String    @id @default(cuid())
+  content         String    @db.Text
+  author          User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId        String
+  parentId        String?
+  parent          Message?  @relation("MessageReplies", fields: [parentId], references: [id], onDelete: SetNull)
+  replies         Message[] @relation("MessageReplies")
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model Snippet {
+  id              String    @id @default(cuid())
+  title           String
+  description     String    @db.Text
+  code            String    @db.Text
+  language        String
+  tags            String[]
+  author          User      @relation(fields: [authorId], references: [id])
+  authorId        String
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model Quiz {
+  id              String    @id @default(cuid())
+  title           String
+  description     String    @db.Text
+  questions       Question[]
+  author          User      @relation(fields: [authorId], references: [id])
+  authorId        String
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model Roadmap {
+  id              String    @id @default(cuid())
+  title           String
+  description     String   @db.Text
+  milestones      Milestone[]
+  author          User      @relation(fields: [authorId], references: [id])
+  authorId        String
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model Question {
+  id              String    @id @default(cuid())
+  content         String    @db.Text
+  options         String[]
+  correctOption   Int
+  explanation     String    @db.Text
+  quiz            Quiz      @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  quizId          String
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model Milestone {
+  id              String    @id @default(cuid())
+  title           String
+  description     String    @db.Text
+  tasks           Task[]
+  roadmap         Roadmap   @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+  roadmapId       String
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model Task {
+  id              String    @id @default(cuid())
+  title           String
+  description     String    @db.Text
+  completed       Boolean   @default(false)
+  milestone       Milestone @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  milestoneId     String
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 }
