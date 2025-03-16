@@ -60,12 +60,18 @@ model VerificationToken {
   @@id([identifier, token])
 }
 
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
 model Problem {
   id              String        @id @default(cuid())
   title           String
   slug            String        @unique
   description     String        @db.Text  // Markdown content including examples
-  difficulty      Int           // 1: Easy, 2: Medium, 3: Hard
+  difficulty     Difficulty
   tags            String[]
   template        String        @db.Text
   testCases       TestCase[]

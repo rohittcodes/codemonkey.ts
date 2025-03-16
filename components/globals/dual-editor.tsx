@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { EditorModeToggle } from "./editor-mode-toggle";
 import { Room } from "@/lib/providers/room";
 import {
   CollaborativeEditorDynamic,
@@ -16,10 +15,11 @@ import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
+  TooltipTrigger,
 } from "@/components/ui/tooltip";
 
 import styles from "./editor.module.css";
-import { CheckIcon, CopyIcon } from "lucide-react";
+import { CheckIcon, CopyIcon, UsersIcon } from "lucide-react";
 
 type Props = {
   problemId: string;
@@ -44,6 +44,7 @@ export function DualEditor({
   const [activeRoom, setActiveRoom] = useState(roomFromUrl);
   const [code, setCode] = useState(initialCode);
   const [copied, setCopied] = useState(false);
+  const [editorKey, setEditorKey] = useState(Date.now());
 
   const roomId = activeRoom
     ? `problem-${problemId}-${activeRoom}`
@@ -56,7 +57,11 @@ export function DualEditor({
 
   const handleCodeChange = (newCode: string) => {
     setCode(newCode);
-    localStorage.setItem(`code-${problemId}-${userId}`, newCode);
+    try {
+      localStorage.setItem(`code-${problemId}-${userId}`, newCode);
+    } catch (e) {
+      console.error("Failed to save code to localStorage:", e);
+    }
   };
 
   useEffect(() => {
@@ -64,17 +69,24 @@ export function DualEditor({
       const savedCode = localStorage.getItem(`code-${problemId}-${userId}`);
       if (savedCode) {
         setCode(savedCode);
+      } else {
+        setCode(initialCode);
       }
     } catch (e) {
       console.error("Failed to load code from localStorage:", e);
+      setCode(initialCode);
     }
-  }, [problemId, userId]);
+  }, [problemId, userId, initialCode]);
 
   const handleCreateRoom = () => {
     if (roomName.trim()) {
       const room = roomName.trim();
       setActiveRoom(room);
       setIsCollaborative(true);
+
+      localStorage.setItem(`code-${problemId}-${userId}`, code);
+
+      setEditorKey(Date.now());
 
       router.push(`/app/problems/${problemId}?room=${room}`, { scroll: false });
     }
@@ -83,6 +95,7 @@ export function DualEditor({
   const handleLeaveRoom = () => {
     setActiveRoom("");
     setIsCollaborative(false);
+    setEditorKey(Date.now());
     router.push(`/app/problems/${problemId}`, { scroll: false });
   };
 
@@ -97,75 +110,84 @@ export function DualEditor({
       <div className={styles.editorHeader}>
         <h2 className={styles.editorTitle}>Code Editor</h2>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           {isCollaborative && activeRoom ? (
-            <div className="flex items-center gap-2">
-              <span className="text-green-600 font-medium">
-                Room: {activeRoom}
-              </span>
+            <div className="flex items-center gap-2 border rounded-md p-1.5 bg-accent-50">
+              <div className="flex items-center gap-1.5">
+                <UsersIcon className="h-4 w-4 text-green-600" />
+                <span className="text-green-600 font-medium">
+                  Room: {activeRoom}
+                </span>
+              </div>
+
               <TooltipProvider>
                 <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={copyShareableLink}
+                      className="h-8 px-2 flex items-center gap-1"
+                    >
+                      {copied ? (
+                        <CheckIcon className="h-4 w-4" />
+                      ) : (
+                        <CopyIcon className="h-4 w-4" />
+                      )}
+                      <span className="hidden sm:inline">Share</span>
+                    </Button>
+                  </TooltipTrigger>
                   <TooltipContent>
-                    {copied ? "Copied!" : "Copy link"}
+                    {copied ? "Copied!" : "Copy room link"}
                   </TooltipContent>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={copyShareableLink}
-                    className="flex items-center gap-1"
-                  >
-                    {copied ? (
-                      <CheckIcon className="h-4 w-4" />
-                    ) : (
-                      <CopyIcon className="h-4 w-4" />
-                    )}
-                    Share
-                  </Button>
                 </Tooltip>
               </TooltipProvider>
 
-              <Button size="sm" variant="outline" onClick={handleLeaveRoom}>
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={handleLeaveRoom}
+                className="h-8"
+              >
                 Leave Room
               </Button>
             </div>
           ) : (
-            <div className="flex gap-2">
+            <div className="flex gap-2 border rounded-md p-1.5 bg-accent-50">
               <Input
                 placeholder="Enter room name"
                 value={roomName}
                 onChange={(e) => setRoomName(e.target.value)}
-                className="w-48"
+                className="w-48 h-8"
               />
-              <Button size="sm" onClick={handleCreateRoom}>
-                Create/Join Room
+              <Button
+                size="sm"
+                onClick={handleCreateRoom}
+                disabled={!roomName.trim()}
+                className="h-8"
+              >
+                <UsersIcon className="h-4 w-4 mr-1" />
+                Join Collaborative Room
               </Button>
             </div>
           )}
-
-          <EditorModeToggle
-            onModeChange={(collaborative) => {
-              setIsCollaborative(collaborative);
-              if (!collaborative) {
-                setActiveRoom("");
-                router.push(`/app/problems/${problemId}`, { scroll: false });
-              }
-            }}
-            defaultCollaborative={isCollaborative}
-          />
         </div>
       </div>
 
       <div className={styles.editorWrapper}>
         <Suspense fallback={<EditorLoading />}>
           {isCollaborative && activeRoom ? (
-            <Room problemId={roomId}>
+            <Room problemId={roomId} key={`room-${editorKey}`}>
               <CollaborativeEditorDynamic
+                key={`collab-${editorKey}`}
                 initialValue={code}
                 language={language}
+                onCodeChange={handleCodeChange}
               />
             </Room>
           ) : (
             <PersonalEditorDynamic
+              key={`personal-${editorKey}`}
               initialValue={code}
               language={language}
               onCodeChange={handleCodeChange}

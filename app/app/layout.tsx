@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Separator } from "@radix-ui/react-separator";
 import { Fragment } from "react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const generateBreadcrumbs = (pathname: string) => {
   const paths = pathname.split("/").filter((path) => path);
@@ -35,7 +36,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset>
+      <SidebarInset className="flex flex-col h-[calc(100vh-1rem)] w-full">
         <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
           <SidebarTrigger className="-ml-1" />
           <Separator orientation="vertical" className="mr-2 h-4" />
@@ -60,7 +61,11 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
             </BreadcrumbList>
           </Breadcrumb>
         </header>
-        <main className="flex-1 p-4">{children}</main>
+        <div className="flex-1 overflow-hidden">
+          <ScrollArea className="h-full w-full">
+            <main className="p-4">{children}</main>
+          </ScrollArea>
+        </div>
       </SidebarInset>
     </SidebarProvider>
   );

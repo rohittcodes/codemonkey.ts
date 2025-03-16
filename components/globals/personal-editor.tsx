@@ -36,13 +36,15 @@ const PersonalEditor = ({
       <Editor
         height="100%"
         defaultLanguage={language}
+        className="bg-background"
         defaultValue={initialValue}
         onChange={handleCodeChange}
         onMount={handleEditorDidMount}
         options={{
+          theme: "vs-dark",
           minimap: { enabled: false },
           fontSize: 14,
-          scrollBeyondLastLine: false,
+          scrollBeyondLastLine: true,
           wordWrap: "on",
           wrappingIndent: "indent",
           automaticLayout: true,

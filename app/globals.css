@@ -4,6 +4,10 @@
 
 @custom-variant dark (&:is(.dark *));
 
+body {
+  overflow-y: hidden;
+}
+
 .yRemoteSelection {
   opacity: 0.5;
   background-color: var(--user-color);
